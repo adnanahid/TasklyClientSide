@@ -1,10 +1,11 @@
 import { useContext, useState } from "react";
-import { FaPlus } from "react-icons/fa";
+import { FaEdit, FaPlus } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { AuthContext } from "../contexts/AuthProvider";
 import axios from "axios";
 import toast from "react-hot-toast";
 import useTask from "../hooks/useTask";
+import { RiDeleteBin6Fill } from "react-icons/ri";
 
 export default function HomePage() {
   const { user } = useContext(AuthContext);
@@ -17,6 +18,8 @@ export default function HomePage() {
       title: e.target.title.value,
       description: e.target.description.value,
       email: user?.email,
+      date: new Date(),
+      category: "todo",
     };
     axios
       .post("http://localhost:3000/tasks", task)
@@ -31,6 +34,19 @@ export default function HomePage() {
       });
   };
 
+  const handleDelete = (_id) => {
+    axios
+      .delete(`http://localhost:3000/tasks/${_id}`)
+      .then((res) => {
+        toast.success("Task deleted successfully");
+        refetch();
+      })
+      .catch((error) => {
+        toast.error("Error deleting task");
+        console.log(error);
+      });
+  };
+
   return (
     <div className="max-w-[1020px] grid grid-cols-3 mx-auto">
       {/* ToDo Section */}
@@ -39,19 +55,40 @@ export default function HomePage() {
         <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
           To-Do
         </h2>
+
         {/* ToDo List */}
         <div className="text-white mb-5">
           {tasks.map((task, index) => (
-            <div key={index} className="task p-4 m-2 rounded-md bg-[#323232]">
+            <div
+              key={index}
+              className="relative task p-4 m-2 rounded-md bg-[#323232] group"
+            >
               <h3 className="text-base font-semibold">
                 {index + 1}. {task.title}
               </h3>
               <p className="text-sm text-gray-300">{task.description}</p>
+
+              {/* Action Buttons (Hidden by default, visible on hover) */}
+              <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  className="text-gray-400 hover:text-white tooltip tooltip-bottom"
+                  data-tip="Edit Card"
+                >
+                  <FaEdit className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(task._id)}
+                  className="text-red-400 hover:text-red-600 tooltip tooltip-bottom"
+                  data-tip="Delete Card"
+                >
+                  <RiDeleteBin6Fill className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
-        {/* add ToDo */}
 
+        {/* add ToDo */}
         <div>
           {isInputOpen ? (
             <div className="p-2">
@@ -90,7 +127,7 @@ export default function HomePage() {
                 onClick={() => setIsInputOpen(true)}
                 className="btn bg-[#151515] border-none shadow-none w-full flex items-center justify-center gap-2 hover:bg-[#323232] text-white transition duration-300 transform"
               >
-                <FaPlus /> Add ToDo
+                <FaPlus /> Add a Task
               </button>
             </div>
           )}

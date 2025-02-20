@@ -1,25 +1,35 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
+import { AuthContext } from "../contexts/AuthProvider";
+import axios from "axios";
+import toast from "react-hot-toast";
+import useTask from "../hooks/useTask";
 
 export default function HomePage() {
+  const { user } = useContext(AuthContext);
   const [isInputOpen, setIsInputOpen] = useState(false);
+  const { tasks, isLoading, refetch } = useTask();
 
-  const todo = [
-    {
-      title: "Finish the React project",
-      description: "Complete the frontend for the task management app.",
-    },
-    {
-      title: "Complete Firebase integration",
-      description: "Set up Firebase Auth and Firestore for task persistence.",
-    },
-    {
-      title: "Review TypeScript basics",
-      description:
-        "Go through TypeScript documentation and practice basic concepts.",
-    },
-  ];
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const task = {
+      title: e.target.title.value,
+      description: e.target.description.value,
+      email: user?.email,
+    };
+    axios
+      .post("http://localhost:3000/tasks", task)
+      .then((res) => {
+        toast.success("Added Successfully");
+        setIsInputOpen(false);
+        refetch();
+      })
+      .catch((error) => {
+        toast.error("Anything is wrong");
+        console.log(error);
+      });
+  };
 
   return (
     <div className="max-w-[1020px] grid grid-cols-3 mx-auto">
@@ -31,7 +41,7 @@ export default function HomePage() {
         </h2>
         {/* ToDo List */}
         <div className="text-white mb-5">
-          {todo.map((task, index) => (
+          {tasks.map((task, index) => (
             <div key={index} className="task p-4 m-2 rounded-md bg-[#323232]">
               <h3 className="text-base font-semibold">
                 {index + 1}. {task.title}
@@ -45,19 +55,24 @@ export default function HomePage() {
         <div>
           {isInputOpen ? (
             <div className="p-2">
-              <div className="text-white">
+              <form onSubmit={handleSubmit} className="text-white">
                 <input
                   type="text"
-                  className="border rounded bg-[#323232] w-full px-2 py-1 mb-3"
+                  name="title"
+                  className="border rounded bg-[#323232] w-full px-2 py-1 mb-3 text-sm"
                   placeholder="title"
                 />
                 <textarea
                   type="text"
-                  className="border rounded bg-[#323232] w-full p-2 mb-3"
+                  name="description"
+                  className="border rounded bg-[#323232] w-full p-2 mb-3 text-sm"
                   placeholder="description"
                 />
                 <div className="flex items-center gap-5">
-                  <button className="btn w-32 bg-[#151515] shadow-none text-white hover:bg-[#323232]">
+                  <button
+                    type="submit"
+                    className="btn w-32 bg-[#151515] shadow-none text-white hover:bg-[#323232]"
+                  >
                     Add Task
                   </button>
                   <button
@@ -67,7 +82,7 @@ export default function HomePage() {
                     <RxCross2 className="" />
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           ) : (
             <div className="text-center mb-3 px-2">

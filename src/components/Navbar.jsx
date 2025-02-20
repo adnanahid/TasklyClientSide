@@ -21,7 +21,7 @@ export default function Navbar() {
         };
 
         axios
-          .post("http://localhost:3000/userDetails", userDetails)
+          .post("http://localhost:3000/userdetails", userDetails)
           .then((response) => {
             console.log("User saved:", response.data);
             navigate("/");

@@ -1,27 +1,26 @@
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase";
+import { useContext } from "react";
+import { AuthContext } from "../contexts/AuthProvider";
 
 const Login = () => {
-  const navigate = useNavigate();
-  const provider = new GoogleAuthProvider();
+  const navigate = useNavigate({});
+  const { setUser, handleGoogleSignIn } = useContext(AuthContext);
 
-  const handleGoogleSignIn = () => {
-    signInWithPopup(auth, provider)
+  const handleGoogle = () => {
+    handleGoogleSignIn()
       .then((result) => {
-        const user = result.user;
-        console.log(user);
+        setUser(result.user);
+        console.log("User signed in:", result.user);
         navigate("/");
       })
       .catch((error) => {
-        const errorMessage = error.message;
-        console.log(errorMessage);
+        console.error("Google Sign-In Error:", error.message);
       });
   };
 
   return (
-    <div className="login-container">
-      <button onClick={handleGoogleSignIn} className="btn">
+    <div className="min-h-screen grid place-items-center">
+      <button onClick={handleGoogle} className="btn bg-[#191919] text-white">
         Sign in with Google
       </button>
     </div>

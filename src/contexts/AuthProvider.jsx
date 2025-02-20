@@ -30,7 +30,6 @@ export default function AuthProvider({ children }) {
     });
     return () => unsubscribe(); // Cleanup subscription on unmount
   }, []);
-  console.log(user);
 
   // Auth Context Data
   const authInfo = { user, setUser, handleGoogleSignIn, handleLogout };

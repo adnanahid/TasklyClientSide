@@ -1,28 +1,45 @@
 import { useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthProvider";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function Navbar() {
   const navigate = useNavigate({});
-  const { user, setUser, handleGoogleSignIn } = useContext(AuthContext);
+  const { user, setUser, handleGoogleSignIn, handleLogout } =
+    useContext(AuthContext);
 
   const handleGoogle = () => {
     handleGoogleSignIn()
       .then((result) => {
-        setUser(result.user);
-        navigate("/");
+        const loggedUser = result.user;
+        setUser(loggedUser);
+        const userDetails = {
+          name: loggedUser.displayName,
+          email: loggedUser.email,
+          photoURL: loggedUser.photoURL,
+        };
+
+        axios
+          .post("http://localhost:3000/userDetails", userDetails)
+          .then((response) => {
+            console.log("User saved:", response.data);
+            navigate("/");
+            toast.success("Login Successful");
+          })
+          .catch((error) => {
+            toast.error("Login Failed");
+            console.error("Google sign-in error:", error);
+          });
       })
-      .catch((error) => {});
+      .catch((error) => {
+        toast.error("Login Failed");
+        console.error("Google sign-in error:", error);
+      });
   };
 
   const logOut = () => {
-    handleLogout()
-      .then(() => {
-        console.log(user);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    handleLogout();
   };
 
   return (
@@ -36,14 +53,12 @@ export default function Navbar() {
       <div>
         {user ? (
           <div className="space-x-5">
-            <NavLink to="/login" className="">
-              <button
-                className="btn btn-sm bg-[#151515] text-white"
-                onClick={logOut}
-              >
-                Logout
-              </button>
-            </NavLink>
+            <button
+              className="btn btn-sm bg-[#151515] text-white"
+              onClick={logOut}
+            >
+              Logout
+            </button>
             <div className="avatar">
               <div className="w-12 rounded-full">
                 <img src={user?.photoURL} />

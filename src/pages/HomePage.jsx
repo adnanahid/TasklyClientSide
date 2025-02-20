@@ -18,7 +18,7 @@ export default function HomePage() {
   return (
     <div className="max-w-[1020px] grid grid-cols-3 mx-auto">
       {/* ToDo Section */}
-      <div className="bg-[#151515] rounded-lg max-w-80 mt-12">
+      <div className="col-span-1 bg-[#151515] rounded-lg max-w-80 mt-12">
         {/* heading */}
         <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
           To-Do
@@ -38,22 +38,22 @@ export default function HomePage() {
           ))}
         </div>
         {/* add ToDo */}
-        <div className="text-center mb-5 px-2">
-          <button className="btn border-none w-full bg-[#323232] mx-auto text-white">
+        <div className="text-center mb-3 px-2">
+          <button className="btn shadow-none border-none w-full bg-[#323232] mx-auto text-white">
             Add ToDo +
           </button>
         </div>
       </div>
 
       {/* In Progress Section */}
-      <div className="bg-[#151515] rounded-lg max-w-80 mt-12">
+      <div className="col-span-1 bg-[#151515] rounded-lg max-w-80 mt-12">
         <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
           In Progress
-        </h2>
+        </h2> 
       </div>
 
       {/* Done Section */}
-      <div className="bg-[#151515] rounded-lg max-w-80 mt-12">
+      <div className="col-span-1 bg-[#151515] rounded-lg max-w-80 mt-12">
         <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
           Done
         </h2>

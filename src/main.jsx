@@ -6,6 +6,7 @@ import App from "./App";
 import ErrorPage from "./pages/ErrorPage";
 import HomePage from "./pages/HomePage";
 import AuthProvider from "./contexts/AuthProvider";
+import { Toaster } from "react-hot-toast";
 
 const router = createBrowserRouter([
   {
@@ -26,5 +27,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <AuthProvider>
       <RouterProvider router={router} />
     </AuthProvider>
+    <Toaster />
   </React.StrictMode>
 );

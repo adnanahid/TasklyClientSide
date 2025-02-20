@@ -1,4 +1,10 @@
+import { useState } from "react";
+import { FaPlus } from "react-icons/fa";
+import { RxCross2 } from "react-icons/rx";
+
 export default function HomePage() {
+  const [isInputOpen, setIsInputOpen] = useState(false);
+
   const todo = [
     {
       title: "Finish the React project",
@@ -26,10 +32,7 @@ export default function HomePage() {
         {/* ToDo List */}
         <div className="text-white mb-5">
           {todo.map((task, index) => (
-            <div
-              key={index}
-              className="task p-4 m-2 rounded-md bg-[#323232]"
-            >
+            <div key={index} className="task p-4 m-2 rounded-md bg-[#323232]">
               <h3 className="text-base font-semibold">
                 {index + 1}. {task.title}
               </h3>
@@ -38,10 +41,44 @@ export default function HomePage() {
           ))}
         </div>
         {/* add ToDo */}
-        <div className="text-center mb-3 px-2">
-          <button className="btn shadow-none border-none w-full bg-[#323232] mx-auto text-white">
-            Add ToDo +
-          </button>
+
+        <div>
+          {isInputOpen ? (
+            <div className="p-2">
+              <div className="text-white">
+                <input
+                  type="text"
+                  className="border rounded bg-[#323232] w-full px-2 py-1 mb-3"
+                  placeholder="title"
+                />
+                <textarea
+                  type="text"
+                  className="border rounded bg-[#323232] w-full p-2 mb-3"
+                  placeholder="description"
+                />
+                <div className="flex items-center gap-5">
+                  <button className="btn w-32 bg-[#151515] shadow-none text-white hover:bg-[#323232]">
+                    Add Task
+                  </button>
+                  <button
+                    className="p-2 text-xl"
+                    onClick={() => setIsInputOpen(false)}
+                  >
+                    <RxCross2 className="" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center mb-3 px-2">
+              <button
+                onClick={() => setIsInputOpen(true)}
+                className="btn bg-[#151515] border-none shadow-none w-full flex items-center justify-center gap-2 hover:bg-[#323232] text-white transition duration-300 transform"
+              >
+                <FaPlus /> Add ToDo
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -49,7 +86,7 @@ export default function HomePage() {
       <div className="col-span-1 bg-[#151515] rounded-lg max-w-80 mt-12">
         <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
           In Progress
-        </h2> 
+        </h2>
       </div>
 
       {/* Done Section */}

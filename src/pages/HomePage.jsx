@@ -17,29 +17,44 @@ export default function HomePage() {
 
   return (
     <div className="max-w-[1020px] grid grid-cols-3 mx-auto">
-      <div className="bg-[#191919] rounded-lg w-80 mt-12">
-        <h2 className="mb-8 text-2xl tracking-widest font-semibold text-white text-center mt-5">
+      {/* ToDo Section */}
+      <div className="bg-[#151515] rounded-lg max-w-80 mt-12">
+        {/* heading */}
+        <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
           To-Do
         </h2>
-        <div className="text-white bg-[#22272B] mb-5">
+        {/* ToDo List */}
+        <div className="text-white mb-5">
           {todo.map((task, index) => (
             <div
               key={index}
-              className="task p-4 m-2 border border-gray-300 rounded-md"
+              className="task p-4 m-2 rounded-md bg-[#323232]"
             >
-              <h3 className="text-base font-semibold">{index+1}.{" "}{task.title}</h3>
-              <p className="text-sm text-gray-500">{task.description}</p>
+              <h3 className="text-base font-semibold">
+                {index + 1}. {task.title}
+              </h3>
+              <p className="text-sm text-gray-300">{task.description}</p>
             </div>
           ))}
         </div>
+        {/* add ToDo */}
+        <div className="text-center mb-5 px-2">
+          <button className="btn border-none w-full bg-[#323232] mx-auto text-white">
+            Add ToDo +
+          </button>
+        </div>
       </div>
-      <div className="bg-[#191919] rounded-lg w-80 mt-12">
-        <h2 className="mb-8 text-2xl tracking-widest font-semibold text-white text-center mt-5">
+
+      {/* In Progress Section */}
+      <div className="bg-[#151515] rounded-lg max-w-80 mt-12">
+        <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
           In Progress
         </h2>
       </div>
-      <div className="bg-[#191919] rounded-lg w-80 mt-12">
-        <h2 className="mb-8 text-2xl tracking-widest font-semibold text-white text-center mt-5">
+
+      {/* Done Section */}
+      <div className="bg-[#151515] rounded-lg max-w-80 mt-12">
+        <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
           Done
         </h2>
       </div>

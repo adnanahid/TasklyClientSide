@@ -26,7 +26,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className="navbar text-white bg-[#191919] flex justify-between">
+    <div className="navbar text-white bg-[#151515] flex justify-between">
       <div className="flex items-center">
         <img src="/logo.jpg" alt="" className="w-8 h-8" />
         <NavLink to="/" className="btn btn-ghost text-xl">
@@ -38,7 +38,7 @@ export default function Navbar() {
           <div className="space-x-5">
             <NavLink to="/login" className="">
               <button
-                className="btn btn-sm bg-[#191919] text-white"
+                className="btn btn-sm bg-[#151515] text-white"
                 onClick={logOut}
               >
                 Logout
@@ -53,7 +53,7 @@ export default function Navbar() {
         ) : (
           <button
             onClick={handleGoogle}
-            className="btn btn-sm bg-[#191919] text-white"
+            className="btn btn-sm bg-[#151515] text-white"
           >
             Sign in with Google
           </button>

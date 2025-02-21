@@ -18,7 +18,7 @@ export default function Navbar() {
           name: loggedUser.displayName,
           email: loggedUser.email,
           photoURL: loggedUser.photoURL,
-        };
+        };  
 
         axios
           .post("http://localhost:3000/userdetails", userDetails)

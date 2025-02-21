@@ -6,9 +6,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import useTask from "../hooks/useTask";
 import { RiDeleteBin6Fill } from "react-icons/ri";
-import { useDrag, useDrop } from "react-dnd";
+import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { DndProvider } from "react-dnd";
 
 export default function HomePage() {
   const { user } = useContext(AuthContext);
@@ -16,8 +15,12 @@ export default function HomePage() {
   const { tasks, refetch } = useTask();
 
   const categories = ["todo", "in progress", "done"];
+  const [taskOrder, setTaskOrder] = useState({});
+
   const categorizedTasks = categories.reduce((acc, category) => {
-    acc[category] = tasks.filter((task) => task.category === category);
+    acc[category] = tasks
+      .filter((task) => task.category === category)
+      .sort((a, b) => (taskOrder[a._id] ?? 0) - (taskOrder[b._id] ?? 0));
     return acc;
   }, {});
 
@@ -32,7 +35,8 @@ export default function HomePage() {
     };
     axios
       .post("http://localhost:3000/tasks", task)
-      .then(() => {
+      .then((response) => {
+        const newTask = response.data;
         toast.success("Added Successfully");
         setInputOpen(null);
         refetch();
@@ -50,14 +54,49 @@ export default function HomePage() {
       .catch(() => toast.error("Error deleting task"));
   };
 
-  const Task = ({ task }) => {
+  const moveTask = (dragIndex, hoverIndex, category) => {
+    const draggedTask = categorizedTasks[category][dragIndex];
+    const updatedTasks = [...categorizedTasks[category]];
+    updatedTasks.splice(dragIndex, 1);
+    updatedTasks.splice(hoverIndex, 0, draggedTask);
+
+    const newTaskOrder = updatedTasks.reduce((acc, task, index) => {
+      acc[task._id] = index;
+      return acc;
+    }, {});
+
+    setTaskOrder((prev) => ({
+      ...prev,
+      ...newTaskOrder,
+    }));
+    console.log(newTaskOrder);
+    axios
+      .put(`http://localhost:3000/tasks/order`, newTaskOrder)
+      .then(() => {
+        refetch();
+        console.log(newTaskOrder);
+      })
+      .catch(() => toast.error("Failed to update task order"));
+  };
+
+  const Task = ({ task, index, moveTask }) => {
     const [{ isDragging }, drag] = useDrag(() => ({
       type: "TASK",
-      item: { id: task._id, category: task.category },
+      item: { id: task._id, category: task.category, index },
       collect: (monitor) => ({
         isDragging: !!monitor.isDragging(),
       }),
     }));
+
+    const [, drop] = useDrop({
+      accept: "TASK",
+      hover(item) {
+        if (item.id !== task._id) {
+          moveTask(item.index, index, task.category);
+          item.index = index;
+        }
+      },
+    });
 
     const [isEditing, setIsEditing] = useState(false);
     const [editedTask, setEditedTask] = useState({
@@ -84,7 +123,7 @@ export default function HomePage() {
 
     return (
       <div
-        ref={drag}
+        ref={(node) => drag(drop(node))}
         className={`relative task p-4 m-2 rounded-md bg-[#323232] group ${
           isDragging ? "opacity-50" : "opacity-100"
         }`}
@@ -94,14 +133,14 @@ export default function HomePage() {
             <input
               type="text"
               name="title"
-              maxlength="50"
+              maxLength="50"
               value={editedTask.title}
               onChange={handleEditChange}
               className="border border-none rounded bg-[#151515] w-full px-2 py-1 mb-2 text-sm"
             />
             <textarea
               name="description"
-              maxlength="200"
+              maxLength="200"
               value={editedTask.description}
               onChange={handleEditChange}
               className="border border-none rounded bg-[#151515] w-full p-2 mb-2 text-sm"
@@ -185,8 +224,13 @@ export default function HomePage() {
           {category.replace("in progress", "In Progress").toUpperCase()}
         </h2>
         <div className="text-white mb-5">
-          {tasks.map((task) => (
-            <Task key={task._id} task={task} />
+          {tasks.map((task, index) => (
+            <Task
+              key={task._id}
+              task={task}
+              index={index}
+              moveTask={moveTask}
+            />
           ))}
         </div>
         {inputOpen === category ? (
@@ -197,13 +241,13 @@ export default function HomePage() {
             <input
               type="text"
               name="title"
-              maxlength="50"
+              maxLength="50"
               className="border rounded bg-[#323232] w-full px-2 py-1 mb-2 text-sm"
               placeholder="Title"
             />
             <textarea
               name="description"
-              maxlength="200"
+              maxLength="200"
               className="border rounded bg-[#323232] w-full p-2 mb-2 text-sm"
               placeholder="Description"
             />

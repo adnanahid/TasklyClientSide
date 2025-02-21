@@ -12,7 +12,7 @@ import { DndProvider } from "react-dnd";
 
 export default function HomePage() {
   const { user } = useContext(AuthContext);
-  const [inputOpen, setInputOpen] = useState(null);
+  const [inputOpen, setInputOpen] = useState("");
   const { tasks, refetch } = useTask();
 
   const categories = ["todo", "in progress", "done"];
@@ -59,6 +59,29 @@ export default function HomePage() {
       }),
     }));
 
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedTask, setEditedTask] = useState({
+      title: task.title,
+      description: task.description,
+      category: task.category,
+    });
+
+    const handleEditChange = (e) => {
+      setEditedTask({ ...editedTask, [e.target.name]: e.target.value });
+    };
+
+    const handleUpdate = (e) => {
+      e.preventDefault();
+      axios
+        .put(`http://localhost:3000/tasks/${task._id}`, editedTask)
+        .then(() => {
+          toast.success("Task updated successfully");
+          setIsEditing(false);
+          refetch();
+        })
+        .catch(() => toast.error("Failed to update task"));
+    };
+
     return (
       <div
         ref={drag}
@@ -66,20 +89,67 @@ export default function HomePage() {
           isDragging ? "opacity-50" : "opacity-100"
         }`}
       >
-        <h3 className="text-base font-semibold">{task.title}</h3>
-        <p className="text-sm text-gray-300">{task.description}</p>
-        <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button className="text-gray-400 hover:text-white" data-tip="Edit">
-            <FaEdit className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleDelete(task._id)}
-            className="text-red-400 hover:text-red-600"
-            data-tip="Delete"
-          >
-            <RiDeleteBin6Fill className="w-4 h-4" />
-          </button>
-        </div>
+        {isEditing ? (
+          <form onSubmit={handleUpdate} className="text-white">
+            <input
+              type="text"
+              name="title"
+              value={editedTask.title}
+              onChange={handleEditChange}
+              className="border border-none rounded bg-[#151515] w-full px-2 py-1 mb-2 text-sm"
+            />
+            <textarea
+              name="description"
+              value={editedTask.description}
+              onChange={handleEditChange}
+              className="border border-none rounded bg-[#151515] w-full p-2 mb-2 text-sm"
+            />
+            <div className="flex gap-2">
+              <select
+                name="category"
+                value={editedTask.category} // Bind it to state
+                onChange={handleEditChange}
+                className="border-none bg-[#151515] rounded text-sm px-2"
+              >
+                <option value="todo">To Do</option>
+                <option value="in progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+              <button
+                type="submit"
+                className="btn btn-sm bg-[#151515] text-white border-none shadow-none"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="btn btn-sm bg-[#151515] text-white border-none shadow-none"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <h3 className="text-base font-semibold">{task.title}</h3>
+            <p className="text-sm text-gray-300">{task.description}</p>
+            <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-gray-400 hover:text-white"
+              >
+                <FaEdit className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleDelete(task._id)}
+                className="text-red-400 hover:text-red-600"
+              >
+                <RiDeleteBin6Fill className="w-4 h-4" />
+              </button>
+            </div>
+          </>
+        )}
       </div>
     );
   };
@@ -142,7 +212,7 @@ export default function HomePage() {
           <div className="text-center">
             <button
               onClick={() => setInputOpen(category)}
-              className="btn bg-[#151515] w-full flex items-center justify-center gap-2 hover:bg-[#323232] text-white"
+              className="btn shadow-none border-none bg-[#151515] w-full flex items-center justify-center gap-2 hover:bg-[#323232] text-white"
             >
               <FaPlus /> Add a Task
             </button>

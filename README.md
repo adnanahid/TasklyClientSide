@@ -62,7 +62,7 @@ Follow these steps to set up Taskly locally.
 ## Install Dependencies
 ## Backend:
     cd client
-    npm 
+    npm install
     
 ## Frontend:
     cd server

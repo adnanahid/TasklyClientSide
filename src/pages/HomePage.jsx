@@ -1,11 +1,14 @@
 import { useContext, useState } from "react";
 import { FaEdit, FaPlus } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
-import { RiDeleteBin6Fill } from "react-icons/ri";
 import { AuthContext } from "../contexts/AuthProvider";
 import axios from "axios";
 import toast from "react-hot-toast";
 import useTask from "../hooks/useTask";
+import { RiDeleteBin6Fill } from "react-icons/ri";
+import { useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { DndProvider } from "react-dnd";
 
 export default function HomePage() {
   const { user } = useContext(AuthContext);
@@ -13,8 +16,12 @@ export default function HomePage() {
   const { tasks, refetch } = useTask();
 
   const categories = ["todo", "in progress", "done"];
+  const categorizedTasks = categories.reduce((acc, category) => {
+    acc[category] = tasks.filter((task) => task.category === category);
+    return acc;
+  }, {});
 
-  const handleAddTask = (e, category) => {
+  const handleTaskSubmit = (e, category) => {
     e.preventDefault();
     const task = {
       title: e.target.title.value,
@@ -33,9 +40,9 @@ export default function HomePage() {
       .catch(() => toast.error("Something went wrong"));
   };
 
-  const handleDelete = (_id) => {
+  const handleDelete = (id) => {
     axios
-      .delete(`http://localhost:3000/tasks/${_id}`)
+      .delete(`http://localhost:3000/tasks/${id}`)
       .then(() => {
         toast.success("Task deleted successfully");
         refetch();
@@ -43,91 +50,119 @@ export default function HomePage() {
       .catch(() => toast.error("Error deleting task"));
   };
 
-  return (
-    <div className="max-w-[1020px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mt-28">
-      {categories.map((category) => (
-        <div key={category} className="bg-[#151515] rounded-lg p-4">
-          <h2 className="text-2xl font-semibold text-white text-center my-2 capitalize">
-            {category}
-          </h2>
+  const Task = ({ task }) => {
+    const [{ isDragging }, drag] = useDrag(() => ({
+      type: "TASK",
+      item: { id: task._id, category: task.category },
+      collect: (monitor) => ({
+        isDragging: !!monitor.isDragging(),
+      }),
+    }));
 
-          <div className="text-white mb-5">
-            {tasks
-              .filter((task) => task.category === category)
-              .map((task, index) => (
-                <div
-                  key={task._id}
-                  className="relative p-4 m-2 rounded-md bg-[#323232] group"
-                >
-                  <h3 className="text-base font-semibold">
-                    {index + 1}. {task.title}
-                  </h3>
-                  <p className="text-sm text-gray-300">{task.description}</p>
-                  <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      className="text-gray-400 hover:text-white"
-                      title="Edit"
-                    >
-                      <FaEdit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(task._id)}
-                      className="text-red-400 hover:text-red-600"
-                      title="Delete"
-                    >
-                      <RiDeleteBin6Fill className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-          </div>
+    return (
+      <div
+        ref={drag}
+        className={`relative task p-4 m-2 rounded-md bg-[#323232] group ${
+          isDragging ? "opacity-50" : "opacity-100"
+        }`}
+      >
+        <h3 className="text-base font-semibold">{task.title}</h3>
+        <p className="text-sm text-gray-300">{task.description}</p>
+        <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button className="text-gray-400 hover:text-white" data-tip="Edit">
+            <FaEdit className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => handleDelete(task._id)}
+            className="text-red-400 hover:text-red-600"
+            data-tip="Delete"
+          >
+            <RiDeleteBin6Fill className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  };
 
-          {inputOpen === category ? (
-            <form
-              onSubmit={(e) => handleAddTask(e, category)}
-              className="text-white p-2"
-            >
-              <input
-                type="text"
-                name="title"
-                className="border rounded bg-[#323232] w-full px-2 py-1 mb-3 text-sm"
-                placeholder="Title"
-                required
-              />
-              <textarea
-                name="description"
-                className="border rounded bg-[#323232] w-full p-2 mb-3 text-sm"
-                placeholder="Description"
-                required
-              />
-              <div className="flex items-center gap-5">
-                <button
-                  type="submit"
-                  className="btn w-32 bg-[#151515] text-white hover:bg-[#323232]"
-                >
-                  Add Task
-                </button>
-                <button
-                  type="button"
-                  className="p-2 text-xl"
-                  onClick={() => setInputOpen(null)}
-                >
-                  <RxCross2 />
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="text-center mb-3 px-2">
+  const TaskCategory = ({ category, tasks }) => {
+    const [, drop] = useDrop(() => ({
+      accept: "TASK",
+      drop: (item) => {
+        if (item.category !== category) {
+          axios
+            .put(`http://localhost:3000/tasks/${item.id}`, { category })
+            .then(() => refetch())
+            .catch(() => toast.error("Failed to move task"));
+        }
+      },
+    }));
+
+    return (
+      <div ref={drop} className="bg-[#151515] rounded-lg p-4 min-h-[200px]">
+        <h2 className="text-2xl font-semibold text-white text-center mb-4">
+          {category.replace("in progress", "In Progress").toUpperCase()}
+        </h2>
+        <div className="text-white mb-5">
+          {tasks.map((task) => (
+            <Task key={task._id} task={task} />
+          ))}
+        </div>
+        {inputOpen === category ? (
+          <form
+            onSubmit={(e) => handleTaskSubmit(e, category)}
+            className="text-white p-2"
+          >
+            <input
+              type="text"
+              name="title"
+              className="border rounded bg-[#323232] w-full px-2 py-1 mb-2 text-sm"
+              placeholder="Title"
+            />
+            <textarea
+              name="description"
+              className="border rounded bg-[#323232] w-full p-2 mb-2 text-sm"
+              placeholder="Description"
+            />
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => setInputOpen(category)}
-                className="btn bg-[#151515] shadow-none border-none w-full flex items-center justify-center gap-2 hover:bg-[#323232] text-white"
+                type="submit"
+                className="btn w-32 bg-[#151515] text-white hover:bg-[#323232]"
               >
-                <FaPlus /> Add a Task
+                Add Task
+              </button>
+              <button
+                onClick={() => setInputOpen(null)}
+                className="p-2 text-xl"
+              >
+                <RxCross2 />
               </button>
             </div>
-          )}
-        </div>
-      ))}
-    </div>
+          </form>
+        ) : (
+          <div className="text-center">
+            <button
+              onClick={() => setInputOpen(category)}
+              className="btn bg-[#151515] w-full flex items-center justify-center gap-2 hover:bg-[#323232] text-white"
+            >
+              <FaPlus /> Add a Task
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <div className="max-w-[1020px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
+        {categories.map((category) => (
+          <TaskCategory
+            key={category}
+            category={category}
+            tasks={categorizedTasks[category]}
+          />
+        ))}
+      </div>
+    </DndProvider>
   );
 }

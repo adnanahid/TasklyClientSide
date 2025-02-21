@@ -1,252 +1,247 @@
 import { useContext, useState } from "react";
-import { FaEdit, FaPlus } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { AuthContext } from "../contexts/AuthProvider";
 import axios from "axios";
 import toast from "react-hot-toast";
 import useTask from "../hooks/useTask";
-import { RiDeleteBin6Fill } from "react-icons/ri";
-import { useDrag, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { DndProvider } from "react-dnd";
+import { IoPencilSharp } from "react-icons/io5";
+import { PiTrashSimpleLight } from "react-icons/pi";
 
 export default function HomePage() {
   const { user } = useContext(AuthContext);
-  const [inputOpen, setInputOpen] = useState("");
+  const [inputOpen, setInputOpen] = useState({
+    todo: false,
+    doing: false,
+    done: false,
+  });
   const { tasks, refetch } = useTask();
+  const [editingTask, setEditingTask] = useState(null);
+  const categories = ["todo", "doing", "done"];
 
-  const categories = ["todo", "in progress", "done"];
-  const categorizedTasks = categories.reduce((acc, category) => {
-    acc[category] = tasks.filter((task) => task.category === category);
-    return acc;
-  }, {});
+  const tasksByCategory = {
+    todo: tasks.filter((task) => task.category === "todo"),
+    doing: tasks.filter((task) => task.category === "doing"),
+    done: tasks.filter((task) => task.category === "done"),
+  };
 
-  const handleTaskSubmit = (e, category) => {
+  // Handle submitting new task
+  const handleSubmit = (e, category) => {
     e.preventDefault();
     const task = {
       title: e.target.title.value,
       description: e.target.description.value,
       email: user?.email,
       date: new Date(),
-      category,
+      category: category,
     };
     axios
       .post("http://localhost:3000/tasks", task)
-      .then(() => {
-        toast.success("Added Successfully");
-        setInputOpen(null);
+      .then((res) => {
+        toast.success("Task Added Successfully");
+        setInputOpen({ ...inputOpen, [category]: false });
         refetch();
       })
-      .catch(() => toast.error("Something went wrong"));
+      .catch((error) => {
+        toast.error("Error adding task");
+        console.log(error);
+      });
   };
 
-  const handleDelete = (id) => {
+  // Handle deleting a task
+  const handleDelete = (taskId) => {
     axios
-      .delete(`http://localhost:3000/tasks/${id}`)
-      .then(() => {
+      .delete(`http://localhost:3000/tasks/${taskId}`)
+      .then((res) => {
         toast.success("Task deleted successfully");
         refetch();
       })
-      .catch(() => toast.error("Error deleting task"));
+      .catch((error) => {
+        toast.error("Error deleting task");
+        console.log(error);
+      });
   };
 
-  const Task = ({ task }) => {
-    const [{ isDragging }, drag] = useDrag(() => ({
-      type: "TASK",
-      item: { id: task._id, category: task.category },
-      collect: (monitor) => ({
-        isDragging: !!monitor.isDragging(),
-      }),
-    }));
-
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedTask, setEditedTask] = useState({
-      title: task.title,
-      description: task.description,
-      category: task.category,
-    });
-
-    const handleEditChange = (e) => {
-      setEditedTask({ ...editedTask, [e.target.name]: e.target.value });
-    };
-
-    const handleUpdate = (e) => {
-      e.preventDefault();
-      axios
-        .put(`http://localhost:3000/tasks/${task._id}`, editedTask)
-        .then(() => {
-          toast.success("Task updated successfully");
-          setIsEditing(false);
-          refetch();
-        })
-        .catch(() => toast.error("Failed to update task"));
-    };
-
-    return (
-      <div
-        ref={drag}
-        className={`relative task p-4 m-2 rounded-md bg-[#323232] group ${
-          isDragging ? "opacity-50" : "opacity-100"
-        }`}
-      >
-        {isEditing ? (
-          <form onSubmit={handleUpdate} className="text-white">
-            <input
-              type="text"
-              name="title"
-              maxlength="50"
-              value={editedTask.title}
-              onChange={handleEditChange}
-              className="border border-none rounded bg-[#151515] w-full px-2 py-1 mb-2 text-sm"
-            />
-            <textarea
-              name="description"
-              maxlength="200"
-              value={editedTask.description}
-              onChange={handleEditChange}
-              className="border border-none rounded bg-[#151515] w-full p-2 mb-2 text-sm"
-            />
-            <div className="flex gap-2">
-              <select
-                name="category"
-                value={editedTask.category} // Bind it to state
-                onChange={handleEditChange}
-                className="border-none bg-[#151515] rounded text-sm px-2"
-              >
-                <option value="todo">To Do</option>
-                <option value="in progress">In Progress</option>
-                <option value="done">Done</option>
-              </select>
-              <button
-                type="submit"
-                className="btn btn-sm bg-[#151515] text-white border-none shadow-none"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="btn btn-sm bg-[#151515] text-white border-none shadow-none"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        ) : (
-          <>
-            <h3 className="text-base font-semibold">{task.title}</h3>
-            <p className="text-xs mb-1">
-              {new Date(task.date).toLocaleString("en-GB", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              })}
-            </p>
-            <p className="text-sm text-gray-300">{task.description}</p>
-            <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => setIsEditing(true)}
-                className="text-gray-400 hover:text-white"
-              >
-                <FaEdit className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => handleDelete(task._id)}
-                className="text-red-400 hover:text-red-600"
-              >
-                <RiDeleteBin6Fill className="w-4 h-4" />
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    );
+  // Handle editing a task (toggle editing form)
+  const handleEdit = (task) => {
+    setEditingTask(task);
   };
 
-  const TaskCategory = ({ category, tasks }) => {
-    const [, drop] = useDrop(() => ({
-      accept: "TASK",
-      drop: (item) => {
-        if (item.category !== category) {
-          axios
-            .put(`http://localhost:3000/tasks/${item.id}`, { category })
-            .then(() => refetch())
-            .catch(() => toast.error("Failed to move task"));
-        }
-      },
-    }));
+  // Handle updating a task
+  const handleUpdate = (e) => {
+    e.preventDefault();
+    const updatedTask = {
+      title: e.target.title.value,
+      description: e.target.description.value,
+      category: e.target.category.value,
+    };
 
-    return (
-      <div ref={drop} className="bg-[#151515] rounded-lg p-4 min-h-[200px]">
-        <h2 className="text-2xl font-semibold text-white text-center mb-4">
-          {category.replace("in progress", "In Progress").toUpperCase()}
-        </h2>
-        <div className="text-white mb-5">
-          {tasks.map((task) => (
-            <Task key={task._id} task={task} />
-          ))}
-        </div>
-        {inputOpen === category ? (
-          <form
-            onSubmit={(e) => handleTaskSubmit(e, category)}
-            className="text-white p-2"
-          >
-            <input
-              type="text"
-              name="title"
-              maxlength="50"
-              className="border rounded bg-[#323232] w-full px-2 py-1 mb-2 text-sm"
-              placeholder="Title"
-            />
-            <textarea
-              name="description"
-              maxlength="200"
-              className="border rounded bg-[#323232] w-full p-2 mb-2 text-sm"
-              placeholder="Description"
-            />
-            <div className="flex items-center gap-3">
-              <button
-                type="submit"
-                className="btn w-32 bg-[#151515] text-white hover:bg-[#323232]"
-              >
-                Add Task
-              </button>
-              <button
-                onClick={() => setInputOpen(null)}
-                className="p-2 text-xl"
-              >
-                <RxCross2 />
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="text-center">
-            <button
-              onClick={() => setInputOpen(category)}
-              className="btn shadow-none border-none bg-[#151515] w-full flex items-center justify-center gap-2 hover:bg-[#323232] text-white"
-            >
-              <FaPlus /> Add a Task
-            </button>
-          </div>
-        )}
-      </div>
-    );
+    axios
+      .put(`http://localhost:3000/tasks/${editingTask._id}`, updatedTask)
+      .then((res) => {
+        toast.success("Task updated successfully");
+        setEditingTask(null);
+        refetch();
+      })
+      .catch((error) => {
+        toast.error("Error updating task");
+        console.log(error);
+      });
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="max-w-[1020px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
-        {categories.map((category) => (
-          <TaskCategory
-            key={category}
-            category={category}
-            tasks={categorizedTasks[category]}
-          />
-        ))}
-      </div>
-    </DndProvider>
+    <div className="max-w-[1020px] grid grid-cols-3 mx-auto">
+      {categories.map((category, idx) => (
+        <div
+          key={idx}
+          className="col-span-1 bg-[#151515] rounded-lg max-w-80 mt-12"
+        >
+          {/* heading */}
+          <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
+            {category === "todo"
+              ? "To-Do"
+              : category === "doing"
+              ? "Doing"
+              : "Done"}
+          </h2>
+
+          {/* Task List */}
+          <div className="text-white mb-5">
+            {tasksByCategory[category].map((task, index) => (
+              <div
+                key={index}
+                className="relative task p-4 m-2 rounded-md bg-[#323232] group"
+              >
+                {/* Display task details or update form */}
+                {editingTask?._id === task._id ? (
+                  <div>
+                    <form onSubmit={handleUpdate} className="text-white">
+                      <input
+                        type="text"
+                        name="title"
+                        defaultValue={task.title}
+                        className="border-none rounded w-full px-2 py-1 mb-3 text-sm bg-[#151515]"
+                        placeholder="Title"
+                      />
+                      <textarea
+                        name="description"
+                        defaultValue={task.description}
+                        className="border-none rounded w-full p-2 text-sm bg-[#151515]"
+                        placeholder="Description"
+                        rows={1}
+                      />
+                      {/* last row */}
+                      <div className="flex items-center gap-3">
+                        <select
+                          name="category"
+                          defaultValue={task.category}
+                          className="border-none rounded w-full p-1.5 px-2 text-sm bg-[#151515]"
+                        >
+                          <option className="text-sm" value="todo">
+                            To-Do
+                          </option>
+                          <option className="text-sm" value="doing">
+                            Doing
+                          </option>
+                          <option className="text-sm" value="done">
+                            Done
+                          </option>
+                        </select>
+                        <button
+                          type="submit"
+                          className="btn btn-sm border-none hover:bg-[#151515] shadow-none text-white bg-[#323232]"
+                        >
+                          Update
+                        </button>
+                        <button
+                          className="btn-circle text-xl hover:bg-[#151515] shadow-none text-white bg-[#323232]"
+                          onClick={() => setEditingTask(null)}
+                        >
+                          <RxCross2 />
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="text-base font-semibold">
+                      {index + 1}. {task.title}
+                    </h3>
+                    <p className="text-sm text-gray-300">{task.description}</p>
+
+                    {/* Action Buttons (Hidden by default, visible on hover) */}
+                    <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        className="text-gray-400 hover:text-white"
+                        onClick={() => handleEdit(task)}
+                      >
+                        <IoPencilSharp className="w-4 h-4" />
+                      </button>
+                      <button
+                        className="text-red-400 hover:text-red-600"
+                        onClick={() => handleDelete(task._id)}
+                      >
+                        <PiTrashSimpleLight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Add Task Button */}
+          <div>
+            {inputOpen[category] ? (
+              <div className="p-2">
+                <form
+                  onSubmit={(e) => handleSubmit(e, category)}
+                  className="text-white"
+                >
+                  <input
+                    type="text"
+                    name="title"
+                    className="border rounded bg-[#323232] w-full px-2 py-1 mb-3 text-sm"
+                    placeholder="Title"
+                  />
+                  <textarea
+                    name="description"
+                    className="border rounded bg-[#323232] w-full p-2 mb-3 text-sm"
+                    placeholder="Description"
+                  />
+                  <div className="flex items-center gap-5">
+                    <button
+                      type="submit"
+                      className="btn w-32 bg-[#151515] shadow-none text-white hover:bg-[#323232]"
+                    >
+                      Add Task
+                    </button>
+                    <button
+                      className="p-2 text-xl"
+                      onClick={() =>
+                        setInputOpen({ ...inputOpen, [category]: false })
+                      }
+                    >
+                      <RxCross2 />
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <div className="text-center mb-3 px-2">
+                <button
+                  onClick={() =>
+                    setInputOpen({ ...inputOpen, [category]: true })
+                  }
+                  className="btn bg-[#151515] border-none shadow-none w-full flex items-center justify-center gap-2 hover:bg-[#323232] text-white transition duration-300 transform"
+                >
+                  <FaPlus /> Add Task
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

@@ -2,6 +2,7 @@
 Taskly is a simple and efficient task management application that helps users organize their tasks into different categories: To-Do, In Progress, and Done. It features drag-and-drop functionality, Firebase authentication, and seamless re
 
 # Live Demo
+    LiveLink: https://taskly-bbccc.web.app/
     Frontend: https://github.com/adnanahid/TasklyClientSide
     Backend: https://github.com/adnanahid/TasklyServerSide
 
@@ -56,8 +57,8 @@ Taskly is a simple and efficient task management application that helps users or
 Follow these steps to set up Taskly locally.   
 
 ## Clone the Repository
-    git clone https://github.com/yourusername/taskly.git
-    cd taskly
+    git clone https://github.com/adnanahid/TasklyClientSide.git
+    cd TasklyClientSide
 
 ## Install Dependencies
 ## Backend:

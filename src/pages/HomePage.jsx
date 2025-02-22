@@ -41,7 +41,7 @@ export default function HomePage() {
       category: category,
     };
     axios
-      .post("http://localhost:3000/tasks", task)
+      .post("https://taskly-server-side.vercel.app/tasks", task)
       .then((res) => {
         toast.success("Task Added Successfully");
         setInputOpen({ ...inputOpen, [category]: false });
@@ -49,21 +49,19 @@ export default function HomePage() {
       })
       .catch((error) => {
         toast.error("Error adding task");
-        console.log(error);
       });
   };
 
   // Handle deleting a task
   const handleDelete = (taskId) => {
     axios
-      .delete(`http://localhost:3000/tasks/${taskId}`)
+      .delete(`https://taskly-server-side.vercel.app/tasks/${taskId}`)
       .then((res) => {
         toast.success("Task deleted successfully");
         refetch();
       })
       .catch((error) => {
         toast.error("Error deleting task");
-        console.log(error);
       });
   };
 
@@ -82,7 +80,10 @@ export default function HomePage() {
     };
 
     axios
-      .put(`http://localhost:3000/tasks/${editingTask._id}`, updatedTask)
+      .put(
+        `https://taskly-server-side.vercel.app/tasks/${editingTask._id}`,
+        updatedTask
+      )
       .then((res) => {
         toast.success("Task updated successfully");
         setEditingTask(null);
@@ -90,21 +91,21 @@ export default function HomePage() {
       })
       .catch((error) => {
         toast.error("Error updating task");
-        console.log(error);
       });
   };
 
   // Drag-and-drop logic for task items
   const moveTask = (taskId, newCategory) => {
     axios
-      .put(`http://localhost:3000/tasks/${taskId}`, { category: newCategory })
+      .put(`https://taskly-server-side.vercel.app/tasks/${taskId}`, {
+        category: newCategory,
+      })
       .then((res) => {
         toast.success("Task moved successfully");
         refetch();
       })
       .catch((error) => {
         toast.error("Error moving task");
-        console.log(error);
       });
   };
 
@@ -124,7 +125,10 @@ export default function HomePage() {
     }));
 
     return (
-      <div ref={(node) => drag(drop(node))} className="relative task p-4 m-2 rounded-md bg-[#323232] group">
+      <div
+        ref={(node) => drag(drop(node))}
+        className="relative task p-4 m-2 rounded-md bg-[#323232] group"
+      >
         {/* Task details */}
         {editingTask?._id === task._id ? (
           <div>
@@ -212,9 +216,17 @@ export default function HomePage() {
     }));
 
     return (
-      <div ref={drop} key={idx} className="col-span-1 bg-[#151515] rounded-lg max-w-80 mt-12">
+      <div
+        ref={drop}
+        key={idx}
+        className="col-span-1 bg-[#151515] rounded-lg max-w-80 mt-12"
+      >
         <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
-          {category === "todo" ? "To-Do" : category === "doing" ? "Doing" : "Done"}
+          {category === "todo"
+            ? "To-Do"
+            : category === "doing"
+            ? "Doing"
+            : "Done"}
         </h2>
 
         <div className="text-white mb-5">
@@ -226,7 +238,10 @@ export default function HomePage() {
         <div>
           {inputOpen[category] ? (
             <div className="p-2">
-              <form onSubmit={(e) => handleSubmit(e, category)} className="text-white">
+              <form
+                onSubmit={(e) => handleSubmit(e, category)}
+                className="text-white"
+              >
                 <input
                   type="text"
                   name="title"
@@ -247,7 +262,9 @@ export default function HomePage() {
                   </button>
                   <button
                     className="p-2 text-xl"
-                    onClick={() => setInputOpen({ ...inputOpen, [category]: false })}
+                    onClick={() =>
+                      setInputOpen({ ...inputOpen, [category]: false })
+                    }
                   >
                     <RxCross2 />
                   </button>

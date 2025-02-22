@@ -15,26 +15,27 @@ export default function Navbar() {
         const loggedUser = result.user;
         setUser(loggedUser);
         const userDetails = {
+          uid: loggedUser.uid,
           name: loggedUser.displayName,
           email: loggedUser.email,
           photoURL: loggedUser.photoURL,
-        };  
+        };
 
         axios
-          .post("http://localhost:3000/userdetails", userDetails)
+          .post(
+            "https://taskly-server-side.vercel.app/userDetails",
+            userDetails
+          )
           .then((response) => {
-            console.log("User saved:", response.data);
             navigate("/");
             toast.success("Login Successful");
           })
           .catch((error) => {
             toast.error("Login Failed");
-            console.error("Google sign-in error:", error);
           });
       })
       .catch((error) => {
         toast.error("Login Failed");
-        console.error("Google sign-in error:", error);
       });
   };
 
@@ -68,7 +69,7 @@ export default function Navbar() {
         ) : (
           <button
             onClick={handleGoogle}
-            className="btn btn-sm bg-[#151515] text-white"
+            className="btn border-none shadow-none btn-sm bg-[#151515] text-white"
           >
             Sign in with Google
           </button>

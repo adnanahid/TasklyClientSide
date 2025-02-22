@@ -1,177 +1,202 @@
 import { useContext, useState } from "react";
-import { FaEdit, FaPlus } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { AuthContext } from "../contexts/AuthProvider";
 import axios from "axios";
 import toast from "react-hot-toast";
 import useTask from "../hooks/useTask";
-import { RiDeleteBin6Fill } from "react-icons/ri";
+import { IoPencilSharp } from "react-icons/io5";
+import { PiTrashSimpleLight } from "react-icons/pi";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
-export default function Home2() {
+// Task item drag type
+const TaskItemType = "TASK_ITEM";
+
+export default function HomePage() {
   const { user } = useContext(AuthContext);
-  const [inputOpen, setInputOpen] = useState("");
+  const [inputOpen, setInputOpen] = useState({
+    todo: false,
+    doing: false,
+    done: false,
+  });
   const { tasks, refetch } = useTask();
+  const [editingTask, setEditingTask] = useState(null);
+  const categories = ["todo", "doing", "done"];
 
-  const categories = ["todo", "in progress", "done"];
-  const [taskOrder, setTaskOrder] = useState({});
+  const tasksByCategory = {
+    todo: tasks.filter((task) => task.category === "todo"),
+    doing: tasks.filter((task) => task.category === "doing"),
+    done: tasks.filter((task) => task.category === "done"),
+  };
 
-  const categorizedTasks = categories.reduce((acc, category) => {
-    acc[category] = tasks
-      .filter((task) => task.category === category)
-      .sort((a, b) => (taskOrder[a._id] ?? 0) - (taskOrder[b._id] ?? 0));
-    return acc;
-  }, {});
-
-  const handleTaskSubmit = (e, category) => {
+  // Handle submitting new task
+  const handleSubmit = (e, category) => {
     e.preventDefault();
     const task = {
       title: e.target.title.value,
       description: e.target.description.value,
       email: user?.email,
       date: new Date(),
-      category,
+      category: category,
     };
     axios
       .post("http://localhost:3000/tasks", task)
-      .then((response) => {
-        const newTask = response.data;
-        toast.success("Added Successfully");
-        setInputOpen(null);
+      .then((res) => {
+        toast.success("Task Added Successfully");
+        setInputOpen({ ...inputOpen, [category]: false });
         refetch();
       })
-      .catch(() => toast.error("Something went wrong"));
+      .catch((error) => {
+        toast.error("Error adding task");
+        console.log(error);
+      });
   };
 
-  const handleDelete = (id) => {
+  // Handle deleting a task
+  const handleDelete = (taskId) => {
     axios
-      .delete(`http://localhost:3000/tasks/${id}`)
-      .then(() => {
+      .delete(`http://localhost:3000/tasks/${taskId}`)
+      .then((res) => {
         toast.success("Task deleted successfully");
         refetch();
       })
-      .catch(() => toast.error("Error deleting task"));
+      .catch((error) => {
+        toast.error("Error deleting task");
+        console.log(error);
+      });
   };
 
-  const Task = ({ task, index, moveTask }) => {
-    const [{ isDragging }, drag] = useDrag(() => ({
-      type: "TASK",
-      item: { id: task._id, category: task.category, index },
-      collect: (monitor) => ({
-        isDragging: !!monitor.isDragging(),
-      }),
+  // Handle editing a task (toggle editing form)
+  const handleEdit = (task) => {
+    setEditingTask(task);
+  };
+
+  // Handle updating a task
+  const handleUpdate = (e) => {
+    e.preventDefault();
+    const updatedTask = {
+      title: e.target.title.value,
+      description: e.target.description.value,
+      category: e.target.category.value,
+    };
+
+    axios
+      .put(`http://localhost:3000/tasks/${editingTask._id}`, updatedTask)
+      .then((res) => {
+        toast.success("Task updated successfully");
+        setEditingTask(null);
+        refetch();
+      })
+      .catch((error) => {
+        toast.error("Error updating task");
+        console.log(error);
+      });
+  };
+
+  // Drag-and-drop logic for task items
+  const moveTask = (taskId, newCategory) => {
+    axios
+      .put(`http://localhost:3000/tasks/${taskId}`, { category: newCategory })
+      .then((res) => {
+        toast.success("Task moved successfully");
+        refetch();
+      })
+      .catch((error) => {
+        toast.error("Error moving task");
+        console.log(error);
+      });
+  };
+
+  const Task = ({ task, index }) => {
+    const [, drag] = useDrag(() => ({
+      type: TaskItemType,
+      item: { id: task._id, index },
     }));
 
-    const [, drop] = useDrop({
-      accept: "TASK",
-      hover(item) {
-        if (item.id !== task._id) {
-          moveTask(item.index, index, task.category);
-          item.index = index;
+    const [, drop] = useDrop(() => ({
+      accept: TaskItemType,
+      drop: (item) => {
+        if (item.index !== index) {
+          moveTask(item.id, task.category);
         }
       },
-    });
-
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedTask, setEditedTask] = useState({
-      title: task.title,
-      description: task.description,
-      category: task.category,
-    });
-
-    const handleEditChange = (e) => {
-      setEditedTask({ ...editedTask, [e.target.name]: e.target.value });
-    };
-
-    const handleUpdate = (e) => {
-      e.preventDefault();
-      axios
-        .put(`http://localhost:3000/tasks/${task._id}`, editedTask)
-        .then(() => {
-          toast.success("Task updated successfully");
-          setIsEditing(false);
-          refetch();
-        })
-        .catch(() => toast.error("Failed to update task"));
-    };
+    }));
 
     return (
       <div
         ref={(node) => drag(drop(node))}
-        className={`relative task p-4 m-2 rounded-md bg-[#323232] group ${
-          isDragging ? "opacity-50" : "opacity-100"
-        }`}
+        className="relative task p-4 m-2 rounded-md bg-[#323232] group"
       >
-        {isEditing ? (
-          <form onSubmit={handleUpdate} className="text-white">
-            <input
-              type="text"
-              name="title"
-              maxLength="50"
-              value={editedTask.title}
-              onChange={handleEditChange}
-              className="border border-none rounded bg-[#151515] w-full px-2 py-1 mb-2 text-sm"
-            />
-            <textarea
-              name="description"
-              maxLength="200"
-              value={editedTask.description}
-              onChange={handleEditChange}
-              className="border border-none rounded bg-[#151515] w-full p-2 mb-2 text-sm"
-            />
-            <div className="flex gap-2">
-              <select
-                name="category"
-                value={editedTask.category} // Bind it to state
-                onChange={handleEditChange}
-                className="border-none bg-[#151515] rounded text-sm px-2"
-              >
-                <option value="todo">To Do</option>
-                <option value="in progress">In Progress</option>
-                <option value="done">Done</option>
-              </select>
-              <button
-                type="submit"
-                className="btn btn-sm bg-[#151515] text-white border-none shadow-none"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="btn btn-sm bg-[#151515] text-white border-none shadow-none"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+        {/* Task details */}
+        {editingTask?._id === task._id ? (
+          <div>
+            <form onSubmit={handleUpdate} className="text-white">
+              <input
+                type="text"
+                name="title"
+                defaultValue={task.title}
+                className="border-none rounded w-full px-2 py-1 mb-3 text-sm bg-[#151515]"
+                placeholder="Title"
+              />
+              <textarea
+                name="description"
+                defaultValue={task.description}
+                className="border-none rounded w-full p-2 text-sm bg-[#151515]"
+                placeholder="Description"
+                rows={1}
+              />
+              <div className="flex items-center gap-3">
+                <select
+                  name="category"
+                  defaultValue={task.category}
+                  className="border-none rounded w-full p-1.5 px-2 text-sm bg-[#151515]"
+                >
+                  <option className="text-sm" value="todo">
+                    To-Do
+                  </option>
+                  <option className="text-sm" value="doing">
+                    Doing
+                  </option>
+                  <option className="text-sm" value="done">
+                    Done
+                  </option>
+                </select>
+                <button
+                  type="submit"
+                  className="btn btn-sm border-none hover:bg-[#151515] shadow-none text-white bg-[#323232]"
+                >
+                  Update
+                </button>
+                <button
+                  className="btn-circle text-xl hover:bg-[#151515] shadow-none text-white bg-[#323232]"
+                  onClick={() => setEditingTask(null)}
+                >
+                  <RxCross2 />
+                </button>
+              </div>
+            </form>
+          </div>
         ) : (
           <>
-            <h3 className="text-base font-semibold">{task.title}</h3>
-            <p className="text-xs mb-1">
-              {new Date(task.date).toLocaleString("en-GB", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              })}
-            </p>
+            <h3 className="text-base font-semibold">
+              {index + 1}. {task.title}
+            </h3>
             <p className="text-sm text-gray-300">{task.description}</p>
+
+            {/* Action Buttons (Hidden by default, visible on hover) */}
             <div className="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
-                onClick={() => setIsEditing(true)}
                 className="text-gray-400 hover:text-white"
+                onClick={() => handleEdit(task)}
               >
-                <FaEdit className="w-4 h-4" />
+                <IoPencilSharp className="w-4 h-4" />
               </button>
               <button
-                onClick={() => handleDelete(task._id)}
                 className="text-red-400 hover:text-red-600"
+                onClick={() => handleDelete(task._id)}
               >
-                <RiDeleteBin6Fill className="w-4 h-4" />
+                <PiTrashSimpleLight className="w-4 h-4" />
               </button>
             </div>
           </>
@@ -180,90 +205,91 @@ export default function Home2() {
     );
   };
 
-  const TaskCategory = ({ category, tasks }) => {
-    const [, drop] = useDrop(() => ({
-      accept: "TASK",
-      drop: (item) => {
-        if (item.category !== category) {
-          axios
-            .put(`http://localhost:3000/tasks/${item.id}`, { category })
-            .then(() => refetch())
-            .catch(() => toast.error("Failed to move task"));
-        }
-      },
+  const Category = ({ category, idx }) => {
+    const [{ isOver }, drop] = useDrop(() => ({
+      accept: TaskItemType,
+      drop: (item) => moveTask(item.id, category),
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+      }),
     }));
 
     return (
-      <div ref={drop} className="bg-[#151515] rounded-lg p-4 min-h-[200px]">
-        <h2 className="text-2xl font-semibold text-white text-center mb-4">
-          {category.replace("in progress", "In Progress").toUpperCase()}
+      <div
+        ref={drop}
+        key={idx}
+        className="col-span-1 bg-[#151515] rounded-lg max-w-80 mt-12"
+      >
+        <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
+          {category === "todo"
+            ? "To-Do"
+            : category === "doing"
+            ? "Doing"
+            : "Done"}
         </h2>
+
         <div className="text-white mb-5">
-          {tasks.map((task, index) => (
-            <Task
-              key={task._id}
-              task={task}
-              index={index}
-              moveTask={moveTask}
-            />
+          {tasksByCategory[category].map((task, index) => (
+            <Task key={task._id} task={task} index={index} />
           ))}
         </div>
-        {inputOpen === category ? (
-          <form
-            onSubmit={(e) => handleTaskSubmit(e, category)}
-            className="text-white p-2"
-          >
-            <input
-              type="text"
-              name="title"
-              maxLength="50"
-              className="border rounded bg-[#323232] w-full px-2 py-1 mb-2 text-sm"
-              placeholder="Title"
-            />
-            <textarea
-              name="description"
-              maxLength="200"
-              className="border rounded bg-[#323232] w-full p-2 mb-2 text-sm"
-              placeholder="Description"
-            />
-            <div className="flex items-center gap-3">
-              <button
-                type="submit"
-                className="btn w-32 bg-[#151515] text-white hover:bg-[#323232]"
+
+        <div>
+          {inputOpen[category] ? (
+            <div className="p-2">
+              <form
+                onSubmit={(e) => handleSubmit(e, category)}
+                className="text-white"
               >
-                Add Task
-              </button>
+                <input
+                  type="text"
+                  name="title"
+                  className="border rounded bg-[#323232] w-full px-2 py-1 mb-3 text-sm"
+                  placeholder="Title"
+                />
+                <textarea
+                  name="description"
+                  className="border rounded bg-[#323232] w-full p-2 mb-3 text-sm"
+                  placeholder="Description"
+                />
+                <div className="flex items-center gap-5">
+                  <button
+                    type="submit"
+                    className="btn w-32 bg-[#151515] shadow-none text-white hover:bg-[#323232]"
+                  >
+                    Add Task
+                  </button>
+                  <button
+                    className="p-2 text-xl"
+                    onClick={() =>
+                      setInputOpen({ ...inputOpen, [category]: false })
+                    }
+                  >
+                    <RxCross2 />
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : (
+            <div className="text-center mb-3 px-2">
               <button
-                onClick={() => setInputOpen(null)}
-                className="p-2 text-xl"
+                onClick={() => setInputOpen({ ...inputOpen, [category]: true })}
+                className="btn bg-[#151515] border-none shadow-none w-full flex items-center justify-center gap-2 hover:bg-[#323232] text-white transition duration-300 transform"
               >
-                <RxCross2 />
+                <FaPlus /> Add Task
               </button>
             </div>
-          </form>
-        ) : (
-          <div className="text-center">
-            <button
-              onClick={() => setInputOpen(category)}
-              className="btn shadow-none border-none bg-[#151515] w-full flex items-center justify-center gap-2 hover:bg-[#323232] text-white"
-            >
-              <FaPlus /> Add a Task
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   };
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="max-w-[1020px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
-        {categories.map((category) => (
-          <TaskCategory
-            key={category}
-            category={category}
-            tasks={categorizedTasks[category]}
-          />
+      <div className="max-w-[1020px] grid grid-cols-3 mx-auto">
+        {categories.map((category, idx) => (
+          <Category key={idx} category={category} idx={idx} />
         ))}
       </div>
     </DndProvider>

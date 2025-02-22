@@ -4,10 +4,10 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import App from "./App";
 import ErrorPage from "./pages/ErrorPage";
-import HomePage from "./pages/HomePage";
 import AuthProvider from "./contexts/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import HomePage from "./pages/HomePage";
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([

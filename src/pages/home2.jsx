@@ -284,7 +284,6 @@ export default function HomePage() {
       </div>
     );
   };
-
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="max-w-[1020px] grid grid-cols-3 mx-auto">

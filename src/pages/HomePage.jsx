@@ -2,7 +2,6 @@ import { useContext, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { AuthContext } from "../contexts/AuthProvider";
-import axios from "axios";
 import toast from "react-hot-toast";
 import useTask from "../hooks/useTask";
 import { IoPencilSharp } from "react-icons/io5";
@@ -221,7 +220,7 @@ export default function HomePage() {
       <div
         ref={drop}
         key={idx}
-        className="md:col-span-1 bg-[#151515] rounded-lg max-w-80 mt-12"
+        className="md:col-span-1 mx-auto w-[320px] bg-[#151515] rounded-lg max-w-80 mt-12"
       >
         <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
           {category === "todo"
@@ -290,7 +289,7 @@ export default function HomePage() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="max-w-[1020px] grid grid-cols-3 mx-auto">
+      <div className="max-w-[1020px] grid grid-cols-1 md:grid-cols-3 mx-auto">
         {categories.map((category, idx) => (
           <Category key={idx} category={category} idx={idx} />
         ))}

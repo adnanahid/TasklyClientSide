@@ -48,9 +48,8 @@ export default function Navbar() {
   return (
     <div className="navbar text-white bg-[#151515] flex justify-between">
       <div className="flex items-center">
-        <img src="/logo.jpg" alt="" className="w-8 h-8" />
         <NavLink to="/" className="btn btn-ghost text-xl">
-          TaskLy
+          <img src="/logo.jpg" alt="" className="w-8 h-8" />
         </NavLink>
       </div>
       <div>

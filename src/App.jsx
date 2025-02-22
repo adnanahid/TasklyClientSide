@@ -6,7 +6,7 @@ export default function App() {
   return (
     <div>
       <Navbar></Navbar>
-      <div className="min-h-[calc(100vh-118px)]">
+      <div className="min-h-[calc(100vh-140px)]">
         <Outlet></Outlet>
       </div>
       <Footer></Footer>

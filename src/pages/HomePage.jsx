@@ -9,11 +9,13 @@ import { IoPencilSharp } from "react-icons/io5";
 import { PiTrashSimpleLight } from "react-icons/pi";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import useAxios from "../hooks/useAxios";
 
 // Task item drag type
 const TaskItemType = "TASK_ITEM";
 
 export default function HomePage() {
+  const axiosPublic = useAxios();
   const { user } = useContext(AuthContext);
   const [inputOpen, setInputOpen] = useState({
     todo: false,
@@ -40,7 +42,7 @@ export default function HomePage() {
       date: new Date(),
       category: category,
     };
-    axios
+    axiosPublic
       .post("https://taskly-server-side.vercel.app/tasks", task)
       .then((res) => {
         toast.success("Task Added Successfully");
@@ -54,7 +56,7 @@ export default function HomePage() {
 
   // Handle deleting a task
   const handleDelete = (taskId) => {
-    axios
+    axiosPublic
       .delete(`https://taskly-server-side.vercel.app/tasks/${taskId}`)
       .then((res) => {
         toast.success("Task deleted successfully");
@@ -79,7 +81,7 @@ export default function HomePage() {
       category: e.target.category.value,
     };
 
-    axios
+    axiosPublic
       .put(
         `https://taskly-server-side.vercel.app/tasks/${editingTask._id}`,
         updatedTask
@@ -96,7 +98,7 @@ export default function HomePage() {
 
   // Drag-and-drop logic for task items
   const moveTask = (taskId, newCategory) => {
-    axios
+    axiosPublic
       .put(`https://taskly-server-side.vercel.app/tasks/${taskId}`, {
         category: newCategory,
       })
@@ -219,7 +221,7 @@ export default function HomePage() {
       <div
         ref={drop}
         key={idx}
-        className="col-span-1 bg-[#151515] rounded-lg max-w-80 mt-12"
+        className="md:col-span-1 bg-[#151515] rounded-lg max-w-80 mt-12"
       >
         <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
           {category === "todo"

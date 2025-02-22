@@ -3,11 +3,13 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthProvider";
 import axios from "axios";
 import toast from "react-hot-toast";
+import useAxios from "../hooks/useAxios";
 
 export default function Navbar() {
   const navigate = useNavigate({});
   const { user, setUser, handleGoogleSignIn, handleLogout } =
     useContext(AuthContext);
+  const axiosPublic = useAxios();
 
   const handleGoogle = () => {
     handleGoogleSignIn()
@@ -21,7 +23,7 @@ export default function Navbar() {
           photoURL: loggedUser.photoURL,
         };
 
-        axios
+        axiosPublic
           .post(
             "https://taskly-server-side.vercel.app/userDetails",
             userDetails

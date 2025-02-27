@@ -17,6 +17,7 @@
     "axios": "^1.7.9",
     "dnd-core": "^16.0.1",
     "firebase": "^11.3.1",
+    "framer-motion": "^12.4.7",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-dnd": "^16.0.1",

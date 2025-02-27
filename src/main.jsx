@@ -8,6 +8,7 @@ import AuthProvider from "./contexts/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import HomePage from "./pages/HomePage";
+import PrivateRoute from "./components/PrivateRoute";
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
@@ -18,7 +19,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <HomePage></HomePage>,
+        element: (
+          <PrivateRoute>
+            <HomePage></HomePage>
+          </PrivateRoute>
+        ),
       },
     ],
   },

@@ -7,6 +7,7 @@ import useTask from "../hooks/useTask";
 import { MdDelete } from "react-icons/md";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import useAxios from "../hooks/useAxios";
+import { HomeNoUser } from "../components/HomeNoUser";
 
 // Task item drag type
 const TaskItemType = "TASK_ITEM";
@@ -121,15 +122,7 @@ export default function HomePage() {
   };
 
   if (!user) {
-    return (
-      <div className="min-h-[calc(100vh-150px)] flex flex-col items-center justify-center">
-        <h1 className="text-4xl font-semibold text-gray-600">
-          welcome to TaskLy.
-        </h1>
-        <br />
-        <p className="text-xl">Please Login first to explore</p>
-      </div>
-    );
+    return <HomeNoUser></HomeNoUser>;
   }
 
   const Task = ({ task, index }) => {

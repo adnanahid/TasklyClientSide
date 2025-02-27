@@ -42,7 +42,7 @@ export const HomeNoUser = () => {
 
   return (
     <motion.div
-      className="min-h-[calc(100vh-150px)] flex flex-col items-center justify-center"
+      className="min-h-[calc(100vh-150px)] flex flex-col items-center justify-center text-center"
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}

@@ -130,7 +130,7 @@ export default function HomePage() {
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
-            className="relative task p-4 m-2 rounded-md bg-[#323232] group"
+            className="task p-4 m-2 rounded-md bg-[#323232] group"
           >
             {editingTask?._id === task._id ? (
               <div>
@@ -183,34 +183,36 @@ export default function HomePage() {
                 </form>
               </div>
             ) : (
-              <>
+              <div>
                 <div className="flex justify-between gap-2">
                   <p className="text-xs text-gray-300">
                     {new Date(task.date).toLocaleDateString("en-US")}
                   </p>
-                  <span className="badge text-xs text-[#151515]">
-                    {task.category}
-                  </span>
+                  <div className="flex gap-3">
+                    <span className="badge text-xs text-[#151515]">
+                      {task.category}
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        className="text-gray-400 hover:text-white"
+                        onClick={() => handleEdit(task)}
+                      >
+                        <FaEdit className="w-4 h-4" />
+                      </button>
+                      <button
+                        className="text-gray-400 hover:text-white"
+                        onClick={() => handleDelete(task._id)}
+                      >
+                        <MdDelete className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <p className="text-base font-semibold text-gray-300">
                   {task.title}
                 </p>
                 <p className="text-sm text-gray-300">{task.description}</p>
-                <div className="absolute bottom-2 right-2 flex gap-2">
-                  <button
-                    className="text-gray-400 hover:text-white"
-                    onClick={() => handleEdit(task)}
-                  >
-                    <FaEdit className="w-4 h-4" />
-                  </button>
-                  <button
-                    className="text-gray-400 hover:text-white"
-                    onClick={() => handleDelete(task._id)}
-                  >
-                    <MdDelete className="w-4 h-4" />
-                  </button>
-                </div>
-              </>
+              </div>
             )}
           </div>
         )}
@@ -225,7 +227,7 @@ export default function HomePage() {
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className="md:col-span-1 mx-auto w-[320px] bg-[#151515] rounded-lg max-w-80 mt-12"
+            className="md:col-span-1 mx-auto w-[420px] md:w-[320px] bg-[#151515] rounded-lg mt-12"
           >
             <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
               {category === "todo"

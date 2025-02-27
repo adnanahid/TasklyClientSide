@@ -41,11 +41,11 @@ export default function HomePage() {
       category: category,
     };
     axiosPublic
-      .post("https://taskly-server-side.vercel.app/tasks", task)
+      .post("/tasks", task)
       .then((res) => {
+        refetch();
         toast.success("Task Added Successfully");
         setInputOpen({ ...inputOpen, [category]: false });
-        refetch();
       })
       .catch((error) => {
         toast.error("Error adding task");
@@ -55,10 +55,10 @@ export default function HomePage() {
   // Handle deleting a task
   const handleDelete = (taskId) => {
     axiosPublic
-      .delete(`https://taskly-server-side.vercel.app/tasks/${taskId}`)
+      .delete(`/tasks/${taskId}`)
       .then((res) => {
-        toast.success("Task deleted successfully");
         refetch();
+        toast.success("Task deleted successfully");
       })
       .catch((error) => {
         toast.error("Error deleting task");
@@ -81,13 +81,13 @@ export default function HomePage() {
 
     axiosPublic
       .put(
-        `https://taskly-server-side.vercel.app/tasks/${editingTask._id}`,
+        `/tasks/${editingTask._id}`,
         updatedTask
       )
       .then((res) => {
+        refetch();
         toast.success("Task updated successfully");
         setEditingTask(null);
-        refetch();
       })
       .catch((error) => {
         toast.error("Error updating task");
@@ -108,7 +108,7 @@ export default function HomePage() {
     const movedTask = tasks.find((task) => task._id === draggableId);
     if (movedTask) {
       axiosPublic
-        .put(`https://taskly-server-side.vercel.app/tasks/${movedTask._id}`, {
+        .put(`/tasks/${movedTask._id}`, {
           category: destination.droppableId,
         })
         .then(() => {
@@ -191,7 +191,9 @@ export default function HomePage() {
                   {new Date(task.date).toLocaleDateString("en-US")}
                 </p>
                 <div className="flex justify-between gap-2">
-                  <p className="text-sm font-semibold text-gray-300">{task.title}</p>
+                  <p className="text-sm font-semibold text-gray-300">
+                    {task.title}
+                  </p>
                   <span className="badge text-xs text-[#151515]">
                     {task.category}
                   </span>

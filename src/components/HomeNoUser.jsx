@@ -23,16 +23,18 @@ export const HomeNoUser = () => {
         };
 
         axiosPublic
-          .post(
-            "https://taskly-server-side.vercel.app/userDetails",
-            userDetails
-          )
+          .post("/userDetails", userDetails)
           .then((response) => {
             navigate("/");
             toast.success("Login Successful");
           })
           .catch((error) => {
-            toast.error("Login Failed");
+            if (error.response && error.response.status === 409) {
+              toast.success("Login Successful");
+            } else {
+              console.log(error);
+              toast.error("Login failed");
+            }
           });
       })
       .catch((error) => {

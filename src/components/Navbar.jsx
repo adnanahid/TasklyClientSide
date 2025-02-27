@@ -20,7 +20,7 @@ export default function Navbar() {
         {user && (
           <div className="space-x-5">
             <button
-              className="btn btn-sm border-none shadow-none bg-[#151515] hover:bg-[#323232] text-white"
+              className="btn border-none shadow-none bg-[#151515] hover:bg-[#323232] text-white"
               onClick={logOut}
             >
               Logout

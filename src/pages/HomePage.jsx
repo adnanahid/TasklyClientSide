@@ -80,10 +80,7 @@ export default function HomePage() {
     };
 
     axiosPublic
-      .put(
-        `/tasks/${editingTask._id}`,
-        updatedTask
-      )
+      .put(`/tasks/${editingTask._id}`, updatedTask)
       .then((res) => {
         refetch();
         toast.success("Task updated successfully");
@@ -187,17 +184,17 @@ export default function HomePage() {
               </div>
             ) : (
               <>
-                <p className="text-xs text-gray-300">
-                  {new Date(task.date).toLocaleDateString("en-US")}
-                </p>
                 <div className="flex justify-between gap-2">
-                  <p className="text-base font-semibold text-gray-300">
-                    {task.title}
+                  <p className="text-xs text-gray-300">
+                    {new Date(task.date).toLocaleDateString("en-US")}
                   </p>
                   <span className="badge text-xs text-[#151515]">
                     {task.category}
                   </span>
                 </div>
+                <p className="text-base font-semibold text-gray-300">
+                  {task.title}
+                </p>
                 <p className="text-sm text-gray-300">{task.description}</p>
                 <div className="absolute bottom-2 right-2 flex gap-2">
                   <button

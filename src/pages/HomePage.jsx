@@ -187,6 +187,15 @@ export default function HomePage() {
               </div>
             ) : (
               <>
+                <p className="text-xs text-gray-300">
+                  {new Date(task.date).toLocaleDateString("en-US")}
+                </p>
+                <div className="flex justify-between gap-2">
+                  <p className="text-sm font-semibold text-gray-300">{task.title}</p>
+                  <span className="badge text-xs text-[#151515]">
+                    {task.category}
+                  </span>
+                </div>
                 <p className="text-sm text-gray-300">{task.description}</p>
                 <div className="absolute bottom-2 right-2 flex gap-2">
                   <button

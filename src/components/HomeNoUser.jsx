@@ -13,7 +13,7 @@ export const HomeNoUser = () => {
   const handleGoogle = () => {
     handleGoogleSignIn()
       .then((result) => {
-        const loggedUser = result.user;
+        const loggedUser = result?.user;
         setUser(loggedUser);
         const userDetails = {
           uid: loggedUser.uid,
@@ -25,20 +25,21 @@ export const HomeNoUser = () => {
         axiosPublic
           .post("/userDetails", userDetails)
           .then((response) => {
-            navigate("/");
-            toast.success("Login Successful");
+            // Check the response message to handle the user registration
+            if (response.data.message === "User already exists") {
+              toast.success("Welcome back!");
+            } else {
+              navigate("/"); // Navigate to the homepage for new users
+              toast.success("Login Successful");
+            }
           })
           .catch((error) => {
-            if (error.response && error.response.status === 409) {
-              toast.success("Login Successful");
-            } else {
-              console.log(error);
-              toast.error("Login failed");
-            }
+            console.log(error);
+            toast.error("Login failed. Please try again.");
           });
       })
       .catch((error) => {
-        toast.error("Login Failed");
+        toast.error("Login Failed. Please try again.");
       });
   };
 

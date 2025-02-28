@@ -9,8 +9,6 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import useAxios from "../hooks/useAxios";
 import { HomeNoUser } from "../components/HomeNoUser";
 
-// Task item drag type
-const TaskItemType = "TASK_ITEM";
 
 export default function HomePage() {
   const axiosPublic = useAxios();
@@ -227,7 +225,7 @@ export default function HomePage() {
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className="md:col-span-1 mx-auto w-[420px] md:w-[320px] bg-[#151515] rounded-lg mt-12"
+            className="md:col-span-1 mx-auto w-[400px] md:w-[320px] bg-[#151515] rounded-lg mt-12"
           >
             <h2 className="text-2xl tracking-widest font-semibold text-white text-center my-2">
               {category === "todo"

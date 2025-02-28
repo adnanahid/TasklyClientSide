@@ -12,7 +12,6 @@ export default function useTask() {
   const {
     data: tasks = [],
     isLoading,
-    isError,
     refetch,
   } = useQuery({
     queryKey: ["tasks", email], // Unique query key
